@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
-import { createServerClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +10,9 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json()
-    const supabase = createServerClient()
+    const supabase = await createClient()
+
+    console.log("[v0] Updating profile for user:", session.user_id)
 
     const { error } = await supabase
       .from("profiles")
@@ -18,13 +20,14 @@ export async function POST(request: NextRequest) {
         ...data,
         updated_at: new Date().toISOString(),
       })
-      .eq("user_id", session.userId)
+      .eq("user_id", session.user_id)
 
     if (error) {
       console.error("[v0] Profile update error:", error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    console.log("[v0] Profile updated successfully")
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("[v0] Profile update exception:", error)

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { getSession } from "@/lib/auth"
-import { createServerClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 import { EditProfileForm } from "@/components/edit-profile-form"
 import { SiteHeader } from "@/components/site-header"
 import Link from "next/link"
@@ -12,9 +12,9 @@ export default async function EditProfilePage() {
     redirect("/auth/login")
   }
 
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
-  const { data: profile, error } = await supabase.from("profiles").select("*").eq("user_id", session.userId).single()
+  const { data: profile, error } = await supabase.from("profiles").select("*").eq("user_id", session.user_id).single()
 
   if (error || !profile) {
     redirect("/dashboard")
