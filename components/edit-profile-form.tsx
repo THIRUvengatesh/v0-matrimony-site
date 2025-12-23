@@ -117,13 +117,17 @@ export function EditProfileForm({ profile }: { profile: Profile }) {
     setIsSubmitting(true)
 
     const formData = new FormData(e.currentTarget)
+
+    const heightValue = formData.get("height")
+    const weightValue = formData.get("weight_kg")
+
     const data = {
       profile_created_by: formData.get("profile_created_by"),
       full_name: formData.get("full_name"),
       date_of_birth: `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`,
       marital_status: formData.get("marital_status"),
-      height: formData.get("height"),
-      weight_kg: formData.get("weight_kg"),
+      height: heightValue ? Math.round(Number.parseFloat(heightValue.toString())) : null,
+      weight_kg: weightValue ? Math.round(Number.parseFloat(weightValue.toString())) : null,
       physical_status: formData.get("physical_status"),
       subcaste: formData.get("subcaste"),
       mother_tongue: formData.get("mother_tongue"),
