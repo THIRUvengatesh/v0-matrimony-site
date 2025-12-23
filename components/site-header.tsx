@@ -26,7 +26,7 @@ export function SiteHeader({ userName, userPhoto }: SiteHeaderProps) {
               <Users className="w-6 h-6 text-white" />
             </div>
             <div>
-              <div className="font-semibold text-base">VettuvagounderMatrimony.com</div>
+              <div className="font-semibold text-base">MatchMatrimony.com</div>
               <div className="text-xs text-muted-foreground">From Matrimony.com Group</div>
             </div>
           </Link>
