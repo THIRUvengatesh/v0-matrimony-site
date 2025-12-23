@@ -29,6 +29,16 @@ export default async function ProfileDetailPage({
 
   const age = calculateAge(profile.date_of_birth)
 
+  async function handleSendInterest() {
+    "use server"
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/interests/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receiverId: profile.user_id }),
+    })
+    return response.json()
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50">
       <header className="border-b bg-white/80 backdrop-blur-sm">
@@ -124,9 +134,11 @@ export default async function ProfileDetailPage({
               </div>
             )}
 
-            <Button className="w-full" size="lg">
-              Express Interest
-            </Button>
+            <form action={handleSendInterest}>
+              <Button type="submit" className="w-full" size="lg">
+                Express Interest
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </main>
