@@ -153,7 +153,7 @@ export default async function DashboardPage() {
 
           <Card>
             <CardContent className="p-4 space-y-1">
-              <Link href="/profile">
+              <Link href="/dashboard/edit-profile">
                 <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
                   <User className="h-4 w-4 mr-2" />
                   Edit Profile
