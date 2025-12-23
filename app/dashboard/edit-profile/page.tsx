@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { getSession } from "@/lib/auth"
 import { createServerClient } from "@/lib/supabase/server"
 import { EditProfileForm } from "@/components/edit-profile-form"
+import { SiteHeader } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
@@ -21,10 +22,12 @@ export default async function EditProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SiteHeader userName={profile.full_name} userPhoto={profile.profile_photo} />
+
       {/* Yellow Banner */}
       <div className="bg-yellow-100 border-b border-yellow-200 py-3 px-4 text-center text-sm">
         <span className="text-yellow-800">
-          💡 Give Professional credibility to your profile with LinkedIn.
+          💡 Give Professional credibility to your profile with LinkedIn.{" "}
           <Link href="#" className="text-blue-600 hover:underline ml-1">
             Add Now »
           </Link>
