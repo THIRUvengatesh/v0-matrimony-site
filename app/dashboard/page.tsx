@@ -146,7 +146,9 @@ export default async function DashboardPage() {
           <Card className="mb-4 bg-red-50 border-red-100">
             <CardContent className="p-4">
               <p className="text-sm font-medium mb-3">Upgrade membership to call/chat with matches</p>
-              <Button className="w-full bg-red-500 hover:bg-red-600 text-white rounded-full">Upgrade now</Button>
+              <Link href="/upgrade">
+                <Button className="w-full bg-red-500 hover:bg-red-600 text-white rounded-full">Upgrade now</Button>
+              </Link>
               <Crown className="h-8 w-8 text-red-300 ml-auto mt-2" />
             </CardContent>
           </Card>
