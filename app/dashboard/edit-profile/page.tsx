@@ -20,6 +20,8 @@ export default async function EditProfilePage() {
     redirect("/dashboard")
   }
 
+  const photoCount = profile.photos?.length || 0
+
   return (
     <div className="min-h-screen bg-gray-50">
       <SiteHeader userName={profile.full_name} userPhoto={profile.profile_photo} />
@@ -57,9 +59,12 @@ export default async function EditProfilePage() {
                 {profile.profile_photo ? "Edit Photo" : "Photo Not Added"}
               </div>
               <p className="text-xs text-gray-500 mt-2">Members would like to see you</p>
-              <button className="mt-2 bg-rose-500 text-white text-xs font-medium py-1.5 px-4 rounded hover:bg-rose-600">
+              <Link
+                href="/dashboard/edit-profile/photos"
+                className="mt-2 inline-block bg-rose-500 text-white text-xs font-medium py-1.5 px-4 rounded hover:bg-rose-600"
+              >
                 Add Photos
-              </button>
+              </Link>
             </div>
 
             {/* Navigation Menu */}
@@ -118,8 +123,11 @@ export default async function EditProfilePage() {
                 <span className="text-gray-400">▼</span>
               </button>
               <div className="divide-y divide-gray-100">
-                <Link href="#photos" className="flex items-center justify-between px-4 py-2 text-sm hover:bg-gray-50">
-                  <span>Photos (0/10)</span>
+                <Link
+                  href="/dashboard/edit-profile/photos"
+                  className="flex items-center justify-between px-4 py-2 text-sm hover:bg-gray-50"
+                >
+                  <span>Photos ({photoCount}/10)</span>
                   <span className="text-xs text-blue-600 font-medium">add</span>
                 </Link>
                 <Link
