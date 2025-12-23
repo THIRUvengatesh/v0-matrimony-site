@@ -1,4 +1,3 @@
-import { put } from "@vercel/blob"
 import { type NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/server"
@@ -27,36 +26,54 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "File size must be less than 5MB" }, { status: 400 })
     }
 
-    // Upload to Vercel Blob with user-specific path
-    const filename = `${session.user_id}/${Date.now()}-${file.name}`
-    const blob = await put(filename, file, {
-      access: "public",
-    })
-
-    // Update profile photos in database
+    // Initialize Supabase client
     const supabase = await createClient()
 
-    // Get current photos array
+    // Create file path with user ID for organization
+    const filename = `${session.user_id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`
+
+    // Convert File to ArrayBuffer for Supabase
+    const buffer = await file.arrayBuffer()
+
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("profile-photos")
+      .upload(filename, buffer, {
+        contentType: file.type,
+        upsert: false,
+      })
+
+    if (uploadError) {
+      console.error("[v0] Storage upload error:", uploadError)
+      throw uploadError
+    }
+
+    // Get public URL
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("profile-photos").getPublicUrl(filename)
+
+    // Update profile photos in database
     const { data: profile } = await supabase.from("profiles").select("photos").eq("user_id", session.user_id).single()
 
     const currentPhotos = profile?.photos || []
-    const updatedPhotos = [...currentPhotos, blob.url]
+    const updatedPhotos = [...currentPhotos, publicUrl]
 
     // Update photos array and set profile_photo if this is the first photo
     const updateData: any = { photos: updatedPhotos }
     if (currentPhotos.length === 0) {
-      updateData.profile_photo = blob.url
+      updateData.profile_photo = publicUrl
     }
 
-    const { error } = await supabase.from("profiles").update(updateData).eq("user_id", session.user_id)
+    const { error: dbError } = await supabase.from("profiles").update(updateData).eq("user_id", session.user_id)
 
-    if (error) {
-      console.error("[v0] Database update error:", error)
+    if (dbError) {
+      console.error("[v0] Database update error:", dbError)
       return NextResponse.json({ error: "Failed to update profile" }, { status: 500 })
     }
 
     return NextResponse.json({
-      url: blob.url,
+      url: publicUrl,
       filename: file.name,
       size: file.size,
       type: file.type,

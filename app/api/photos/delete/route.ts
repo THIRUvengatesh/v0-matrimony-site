@@ -1,4 +1,3 @@
-import { del } from "@vercel/blob"
 import { type NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/server"
@@ -16,13 +15,25 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No URL provided" }, { status: 400 })
     }
 
-    // Delete from Vercel Blob
-    await del(url)
-
-    // Update profile photos in database
     const supabase = await createClient()
 
-    // Get current photos array
+    // Extract filename from public URL
+    // URL format: https://{project}.supabase.co/storage/v1/object/public/profile-photos/{filename}
+    const urlParts = url.split("/storage/v1/object/public/profile-photos/")
+    if (urlParts.length !== 2) {
+      return NextResponse.json({ error: "Invalid photo URL" }, { status: 400 })
+    }
+    const filename = decodeURIComponent(urlParts[1])
+
+    // Delete from Supabase Storage
+    const { error: deleteError } = await supabase.storage.from("profile-photos").remove([filename])
+
+    if (deleteError) {
+      console.error("[v0] Storage delete error:", deleteError)
+      throw deleteError
+    }
+
+    // Update profile photos in database
     const { data: profile } = await supabase
       .from("profiles")
       .select("photos, profile_photo")
@@ -38,10 +49,10 @@ export async function DELETE(request: NextRequest) {
       updateData.profile_photo = updatedPhotos[0] || null
     }
 
-    const { error } = await supabase.from("profiles").update(updateData).eq("user_id", session.user_id)
+    const { error: dbError } = await supabase.from("profiles").update(updateData).eq("user_id", session.user_id)
 
-    if (error) {
-      console.error("[v0] Database update error:", error)
+    if (dbError) {
+      console.error("[v0] Database update error:", dbError)
       return NextResponse.json({ error: "Failed to update profile" }, { status: 500 })
     }
 
