@@ -23,7 +23,7 @@ export default async function HoroscopePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-6">
             <Link href="/dashboard" className="text-red-600 hover:underline text-sm mb-2 inline-block">

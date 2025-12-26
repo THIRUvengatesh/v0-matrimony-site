@@ -1,6 +1,10 @@
 "use client"
 
 import type React from "react"
+
+import { useEffect } from "react"
+
+import type { ReactElement } from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -51,6 +55,12 @@ interface Profile {
   no_of_sisters?: number
   sisters_married?: number
   about_family?: string
+  community_id?: number
+}
+
+interface EditProfileFormProps {
+  profile: Profile
+  activeSection: string
 }
 
 const LANGUAGES = [
@@ -109,7 +119,7 @@ const HEIGHTS = [
   "7'0\"",
 ]
 
-export function EditProfileForm({ profile, activeSection }: { profile: Profile; activeSection: string }) {
+export function EditProfileForm({ profile, activeSection }: EditProfileFormProps): ReactElement {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(profile.languages_known || [])
@@ -122,6 +132,26 @@ export function EditProfileForm({ profile, activeSection }: { profile: Profile; 
   const [year, setYear] = useState(birthDate.getFullYear().toString())
 
   const [aboutMe, setAboutMe] = useState(profile.about_me || "")
+
+  const [communities, setCommunities] = useState<Array<{ id: number; name: string }>>([])
+  const [loadingCommunities, setLoadingCommunities] = useState(true)
+
+  useEffect(() => {
+    async function fetchCommunities() {
+      try {
+        const response = await fetch("/api/communities")
+        const data = await response.json()
+        if (data.communities) {
+          setCommunities(data.communities)
+        }
+      } catch (error) {
+        console.error("[v0] Error loading communities:", error)
+      } finally {
+        setLoadingCommunities(false)
+      }
+    }
+    fetchCommunities()
+  }, [])
 
   const handleLanguageToggle = (lang: string) => {
     setSelectedLanguages((prev) => (prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang]))
@@ -403,6 +433,29 @@ export function EditProfileForm({ profile, activeSection }: { profile: Profile; 
                     </div>
                   </div>
                 </RadioGroup>
+              </div>
+
+              {/* Community */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
+                <Label htmlFor="community_id" className="text-sm font-normal">
+                  Community <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  name="community_id"
+                  defaultValue={profile.community_id?.toString() || ""}
+                  disabled={loadingCommunities}
+                >
+                  <SelectTrigger className="max-w-md bg-gray-50">
+                    <SelectValue placeholder={loadingCommunities ? "Loading..." : "Select Community"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {communities.map((community) => (
+                      <SelectItem key={community.id} value={community.id.toString()}>
+                        {community.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Subcaste */}
@@ -770,323 +823,28 @@ export function EditProfileForm({ profile, activeSection }: { profile: Profile; 
                   id="about_occupation"
                   name="about_occupation"
                   defaultValue={profile.about_occupation || ""}
-                  placeholder="Describe your work, responsibilities, achievements..."
-                  className="min-h-[80px] max-w-2xl bg-gray-50"
+                  placeholder="e.g., Working as a software engineer for 5 years"
+                  className="min-h-[100px] max-w-2xl bg-gray-50"
+                  maxLength={500}
                 />
-              </div>
-            </div>
-          </div>
-        )
-      case "family":
-        return (
-          <div id="family" className="pt-8 border-t">
-            <h2 className="text-base font-semibold mb-6">Family Details</h2>
-            <div className="space-y-5">
-              {/* Family Status */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
-                <Label htmlFor="family_status" className="text-sm font-normal">
-                  Family Status
-                </Label>
-                <Select name="family_status" defaultValue={profile.family_status || ""}>
-                  <SelectTrigger className="w-full max-w-md bg-gray-50">
-                    <SelectValue placeholder="Select family status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="middle_class">Middle Class</SelectItem>
-                    <SelectItem value="upper_middle_class">Upper Middle Class</SelectItem>
-                    <SelectItem value="rich">Rich / Affluent</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Family Type */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
-                <Label htmlFor="family_type" className="text-sm font-normal">
-                  Family Type
-                </Label>
-                <Select name="family_type" defaultValue={profile.family_type || ""}>
-                  <SelectTrigger className="w-full max-w-md bg-gray-50">
-                    <SelectValue placeholder="Select family type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="joint">Joint Family</SelectItem>
-                    <SelectItem value="nuclear">Nuclear Family</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Family Values */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
-                <Label htmlFor="family_values" className="text-sm font-normal">
-                  Family Values
-                </Label>
-                <Select name="family_values" defaultValue={profile.family_values || ""}>
-                  <SelectTrigger className="w-full max-w-md bg-gray-50">
-                    <SelectValue placeholder="Select family values" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="traditional">Traditional</SelectItem>
-                    <SelectItem value="moderate">Moderate</SelectItem>
-                    <SelectItem value="liberal">Liberal</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Father's Occupation */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
-                <Label htmlFor="father_occupation" className="text-sm font-normal">
-                  Father's Occupation
-                </Label>
-                <Input
-                  id="father_occupation"
-                  name="father_occupation"
-                  defaultValue={profile.father_occupation || ""}
-                  placeholder="e.g., Business, Retired, etc."
-                  className="max-w-md bg-gray-50"
-                />
-              </div>
-
-              {/* Mother's Occupation */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
-                <Label htmlFor="mother_occupation" className="text-sm font-normal">
-                  Mother's Occupation
-                </Label>
-                <Input
-                  id="mother_occupation"
-                  name="mother_occupation"
-                  defaultValue={profile.mother_occupation || ""}
-                  placeholder="e.g., Homemaker, Teacher, etc."
-                  className="max-w-md bg-gray-50"
-                />
-              </div>
-
-              {/* Brothers */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
-                <Label className="text-sm font-normal">Brothers</Label>
-                <div className="flex gap-4 items-center">
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="no_of_brothers" className="text-sm text-gray-600">
-                      Total:
-                    </Label>
-                    <Input
-                      id="no_of_brothers"
-                      name="no_of_brothers"
-                      type="number"
-                      min="0"
-                      defaultValue={profile.no_of_brothers || 0}
-                      className="w-20 bg-gray-50"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="brothers_married" className="text-sm text-gray-600">
-                      Married:
-                    </Label>
-                    <Input
-                      id="brothers_married"
-                      name="brothers_married"
-                      type="number"
-                      min="0"
-                      defaultValue={profile.brothers_married || 0}
-                      className="w-20 bg-gray-50"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Sisters */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
-                <Label className="text-sm font-normal">Sisters</Label>
-                <div className="flex gap-4 items-center">
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="no_of_sisters" className="text-sm text-gray-600">
-                      Total:
-                    </Label>
-                    <Input
-                      id="no_of_sisters"
-                      name="no_of_sisters"
-                      type="number"
-                      min="0"
-                      defaultValue={profile.no_of_sisters || 0}
-                      className="w-20 bg-gray-50"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="sisters_married" className="text-sm text-gray-600">
-                      Married:
-                    </Label>
-                    <Input
-                      id="sisters_married"
-                      name="sisters_married"
-                      type="number"
-                      min="0"
-                      defaultValue={profile.sisters_married || 0}
-                      className="w-20 bg-gray-50"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* About Family */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-start">
-                <Label htmlFor="about_family" className="text-sm font-normal pt-2">
-                  About Family
-                </Label>
-                <Textarea
-                  id="about_family"
-                  name="about_family"
-                  defaultValue={profile.about_family || ""}
-                  placeholder="Tell us about your family background, values, traditions..."
-                  className="min-h-[80px] max-w-2xl bg-gray-50"
-                />
-              </div>
-            </div>
-          </div>
-        )
-      case "hobbies":
-        return (
-          <div id="hobbies" className="pt-8 border-t">
-            <h2 className="text-base font-semibold mb-6">Hobbies & Interest</h2>
-            <div className="space-y-5">
-              {/* Hobbies */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-start">
-                <Label className="text-sm font-normal pt-2">Hobbies</Label>
-                <div className="flex flex-wrap gap-2">
-                  {["Reading", "Music", "Cooking", "Traveling", "Photography", "Sports", "Dancing", "Gardening"].map(
-                    (hobby) => (
-                      <label
-                        key={hobby}
-                        className={`px-3 py-1.5 rounded-full border cursor-pointer text-sm ${
-                          selectedHobbies.includes(hobby)
-                            ? "bg-rose-100 border-rose-500 text-rose-700"
-                            : "bg-gray-50 border-gray-300"
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedHobbies.includes(hobby)}
-                          onChange={() => {
-                            setSelectedHobbies((prev) =>
-                              prev.includes(hobby) ? prev.filter((h) => h !== hobby) : [...prev, hobby],
-                            )
-                          }}
-                          className="sr-only"
-                        />
-                        {hobby}
-                      </label>
-                    ),
-                  )}
-                </div>
-              </div>
-
-              {/* Interests */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-start">
-                <Label className="text-sm font-normal pt-2">Interests</Label>
-                <div className="flex flex-wrap gap-2">
-                  {["Movies", "Art", "Technology", "Fashion", "Food", "Fitness", "Adventure", "Volunteering"].map(
-                    (interest) => (
-                      <label
-                        key={interest}
-                        className={`px-3 py-1.5 rounded-full border cursor-pointer text-sm ${
-                          selectedInterests.includes(interest)
-                            ? "bg-rose-100 border-rose-500 text-rose-700"
-                            : "bg-gray-50 border-gray-300"
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedInterests.includes(interest)}
-                          onChange={() => {
-                            setSelectedInterests((prev) =>
-                              prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest],
-                            )
-                          }}
-                          className="sr-only"
-                        />
-                        {interest}
-                      </label>
-                    ),
-                  )}
-                </div>
-              </div>
-
-              {/* Favorite Reads */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
-                <Label htmlFor="favorite_reads" className="text-sm font-normal">
-                  Favorite Reads
-                </Label>
-                <Input
-                  id="favorite_reads"
-                  name="favorite_reads"
-                  defaultValue={profile.favorite_reads || ""}
-                  placeholder="e.g., Fiction, Biographies, Self-help"
-                  className="max-w-md bg-gray-50"
-                />
-              </div>
-
-              {/* Preferred Movies */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
-                <Label htmlFor="preferred_movies" className="text-sm font-normal">
-                  Preferred Movies
-                </Label>
-                <Input
-                  id="preferred_movies"
-                  name="preferred_movies"
-                  defaultValue={profile.preferred_movies || ""}
-                  placeholder="e.g., Action, Comedy, Drama"
-                  className="max-w-md bg-gray-50"
-                />
-              </div>
-            </div>
-          </div>
-        )
-      case "contact":
-        return (
-          <div id="contact" className="pt-8 border-t">
-            <h2 className="text-base font-semibold mb-6">Contact Details</h2>
-            <div className="space-y-5">
-              {/* Location */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
-                <Label htmlFor="location" className="text-sm font-normal">
-                  Location
-                </Label>
-                <Input
-                  id="location"
-                  name="location"
-                  defaultValue={profile.location || ""}
-                  placeholder="e.g., Chennai, Tamil Nadu"
-                  className="max-w-md bg-gray-50"
-                />
-              </div>
-
-              {/* Phone Number */}
-              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
-                <Label htmlFor="phone_number" className="text-sm font-normal">
-                  Contact Number
-                </Label>
-                <Input
-                  id="phone_number"
-                  name="phone_number"
-                  type="tel"
-                  defaultValue={profile.phone_number || ""}
-                  placeholder="e.g., +91 98765 43210"
-                  className="max-w-md bg-gray-50"
-                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Min. 50 characters | {profile.about_occupation?.length || 0} Characters typed
+                </p>
               </div>
             </div>
           </div>
         )
       default:
-        return null
+        return <div>Invalid section</div>
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {renderSection()}
-      {/* Submit Button */}
-      <div className="flex justify-end pt-4">
-        <Button type="submit" disabled={isSubmitting} className="bg-rose-500 hover:bg-rose-600 text-white px-8">
-          {isSubmitting ? "Saving..." : "Save"}
+      <div className="flex justify-end">
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Updating..." : "Update Profile"}
         </Button>
       </div>
     </form>

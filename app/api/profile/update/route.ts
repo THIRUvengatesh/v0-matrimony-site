@@ -14,13 +14,13 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Updating profile for user:", session.user_id)
 
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        ...data,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", session.user_id)
+    const updateData = {
+      ...data,
+      community_id: data.community_id ? Number.parseInt(data.community_id) : null,
+      updated_at: new Date().toISOString(),
+    }
+
+    const { error } = await supabase.from("profiles").update(updateData).eq("user_id", session.user_id)
 
     if (error) {
       console.error("[v0] Profile update error:", error)
