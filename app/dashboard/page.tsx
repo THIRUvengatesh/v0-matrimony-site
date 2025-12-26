@@ -165,10 +165,12 @@ export default async function DashboardPage() {
                 <Search className="h-4 w-4 mr-2" />
                 Edit Preferences
               </Button>
-              <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
-                <Star className="h-4 w-4 mr-2" />
-                Generate Horoscope
-              </Button>
+              <Link href="/dashboard/horoscope">
+                <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-gray-900">
+                  <Star className="h-4 w-4 mr-2" />
+                  Generate Horoscope
+                </Button>
+              </Link>
 
               <div className="pt-4 pb-2">
                 <p className="text-sm font-medium text-gray-600 px-3">Support & feedback</p>
@@ -214,12 +216,14 @@ export default async function DashboardPage() {
                   </div>
                   <span className="font-medium text-sm">Add Photo(s)</span>
                 </button>
-                <button className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-gray-50 transition-colors">
-                  <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
-                    <Star className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <span className="font-medium text-sm">Add Horoscope</span>
-                </button>
+                <Link href="/dashboard/horoscope">
+                  <button className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-gray-50 transition-colors w-full">
+                    <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
+                      <Star className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <span className="font-medium text-sm">Add Horoscope</span>
+                  </button>
+                </Link>
                 <button className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-gray-50 transition-colors">
                   <div className="h-12 w-12 bg-yellow-100 rounded-full flex items-center justify-center">
                     <UsersRound className="h-6 w-6 text-yellow-600" />
