@@ -24,13 +24,18 @@ export default async function MatchesPage() {
     .neq("user_id", session.user_id)
     .order("created_at", { ascending: false })
 
-  // Get shortlisted profiles
-  const { data: shortlistData } = await supabase
-    .from("shortlist")
-    .select("profile_id, profiles!inner(*, users!inner(id))")
-    .eq("user_id", session.user_id)
+  // Get shortlisted profiles - first get shortlist entries, then fetch full profiles
+  const { data: shortlistData } = await supabase.from("shortlist").select("profile_id").eq("user_id", session.user_id)
 
-  const shortlistedMatches = shortlistData?.map((item: any) => item.profiles) || []
+  const shortlistIds = shortlistData?.map((item: any) => item.profile_id) || []
+
+  // Fetch full profile data for shortlisted users
+  let shortlistedMatches: any[] = []
+  if (shortlistIds.length > 0) {
+    const { data } = await supabase.from("profiles").select("*, users!inner(id)").in("user_id", shortlistIds)
+
+    shortlistedMatches = data || []
+  }
 
   // Get premium matches (for demo, just get first 10)
   const premiumMatches = allMatches?.slice(0, 10) || []
