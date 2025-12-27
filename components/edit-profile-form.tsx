@@ -209,8 +209,9 @@ export function EditProfileForm({ profile, activeSection }: EditProfileFormProps
       preferred_movies: formData.get("preferred_movies"),
       location: formData.get("location"),
       phone_number: formData.get("phone_number"),
+      community_id: formData.get("community_id"),
     }
-
+    console.log("[v0] Submitting profile update with data:", data);
     try {
       const response = await fetch("/api/profile/update", {
         method: "POST",
