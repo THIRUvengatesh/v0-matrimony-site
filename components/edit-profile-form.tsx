@@ -56,6 +56,25 @@ interface Profile {
   sisters_married?: number
   about_family?: string
   community_id?: number
+  highest_education?: string
+  employed_in?: string
+  annual_income?: string
+  about_occupation?: string
+  partner_age_from?: number
+  partner_age_to?: number
+  partner_height_from?: number
+  partner_height_to?: number
+  partner_marital_status?: string[]
+  partner_religion?: string[]
+  partner_mother_tongue?: string[]
+  partner_education?: string[]
+  partner_occupation?: string[]
+  partner_country?: string[]
+  partner_state?: string[]
+  partner_eating_habits?: string[]
+  partner_smoking_habits?: string[]
+  partner_drinking_habits?: string[]
+  about_partner?: string
 }
 
 interface EditProfileFormProps {
@@ -166,6 +185,64 @@ export function EditProfileForm({ profile, activeSection }: EditProfileFormProps
     const heightValue = formData.get("height")
     const weightValue = formData.get("weight_kg")
 
+    // Partner Preferences
+    const partnerAgeFrom = formData.get("partner_age_from")
+    const partnerAgeTo = formData.get("partner_age_to")
+    const partnerHeightFrom = formData.get("partner_height_from")
+    const partnerHeightTo = formData.get("partner_height_to")
+    const partnerReligion =
+      formData
+        .get("partner_religion")
+        ?.toString()
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean) || []
+    const partnerOccupation =
+      formData
+        .get("partner_occupation")
+        ?.toString()
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean) || []
+    const partnerCountry =
+      formData
+        .get("partner_country")
+        ?.toString()
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean) || []
+    const partnerState =
+      formData
+        .get("partner_state")
+        ?.toString()
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean) || []
+
+    const partnerMaritalStatusInputs = document.querySelectorAll('input[name="partner-marital-status"]:checked')
+    const partnerMaritalStatus = Array.from(partnerMaritalStatusInputs).map(
+      (input) => (input as HTMLInputElement).value,
+    )
+
+    const partnerMotherTongueInputs = document.querySelectorAll('input[name="partner-lang"]:checked')
+    const partnerMotherTongue = Array.from(partnerMotherTongueInputs).map((input) => (input as HTMLInputElement).value)
+
+    const partnerEducationInputs = document.querySelectorAll('input[name="partner-edu"]:checked')
+    const partnerEducation = Array.from(partnerEducationInputs).map((input) => (input as HTMLInputElement).value)
+
+    const partnerEatingHabitsInputs = document.querySelectorAll('input[name="partner-eating"]:checked')
+    const partnerEatingHabits = Array.from(partnerEatingHabitsInputs).map((input) => (input as HTMLInputElement).value)
+
+    const partnerSmokingHabitsInputs = document.querySelectorAll('input[name="partner-smoking"]:checked')
+    const partnerSmokingHabits = Array.from(partnerSmokingHabitsInputs).map(
+      (input) => (input as HTMLInputElement).value,
+    )
+
+    const partnerDrinkingHabitsInputs = document.querySelectorAll('input[name="partner-drinking"]:checked')
+    const partnerDrinkingHabits = Array.from(partnerDrinkingHabitsInputs).map(
+      (input) => (input as HTMLInputElement).value,
+    )
+
     const data = {
       profile_created_by: formData.get("profile_created_by"),
       full_name: formData.get("full_name"),
@@ -210,8 +287,25 @@ export function EditProfileForm({ profile, activeSection }: EditProfileFormProps
       location: formData.get("location"),
       phone_number: formData.get("phone_number"),
       community_id: formData.get("community_id"),
+
+      // Partner Preferences
+      partner_age_from: partnerAgeFrom ? Number.parseInt(partnerAgeFrom.toString()) : undefined,
+      partner_age_to: partnerAgeTo ? Number.parseInt(partnerAgeTo.toString()) : undefined,
+      partner_height_from: partnerHeightFrom ? Number.parseFloat(partnerHeightFrom.toString()) : undefined,
+      partner_height_to: partnerHeightTo ? Number.parseFloat(partnerHeightTo.toString()) : undefined,
+      partner_marital_status: partnerMaritalStatus,
+      partner_religion: partnerReligion,
+      partner_mother_tongue: partnerMotherTongue,
+      partner_education: partnerEducation,
+      partner_occupation: partnerOccupation,
+      partner_country: partnerCountry,
+      partner_state: partnerState,
+      partner_eating_habits: partnerEatingHabits,
+      partner_smoking_habits: partnerSmokingHabits,
+      partner_drinking_habits: partnerDrinkingHabits,
+      about_partner: formData.get("about_partner"),
     }
-    console.log("[v0] Submitting profile update with data:", data);
+    console.log("[v0] Submitting profile update with data:", data)
     try {
       const response = await fetch("/api/profile/update", {
         method: "POST",
@@ -835,6 +929,299 @@ export function EditProfileForm({ profile, activeSection }: EditProfileFormProps
             </div>
           </div>
         )
+      case "partner":
+        return (
+          <div id="partner">
+            <h2 className="text-base font-semibold mb-2">Partner Preference</h2>
+            <p className="text-xs text-gray-500 mb-6">
+              Tell us your preferences to help us find the right match for you
+            </p>
+
+            <div className="space-y-5">
+              {/* Age Range */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
+                <Label className="text-sm font-normal">Age Range</Label>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    name="partner_age_from"
+                    type="number"
+                    defaultValue={profile.partner_age_from || ""}
+                    placeholder="From"
+                    className="w-[100px] bg-gray-50"
+                    min="18"
+                    max="70"
+                  />
+                  <span className="text-sm text-gray-500">to</span>
+                  <Input
+                    name="partner_age_to"
+                    type="number"
+                    defaultValue={profile.partner_age_to || ""}
+                    placeholder="To"
+                    className="w-[100px] bg-gray-50"
+                    min="18"
+                    max="70"
+                  />
+                  <span className="text-sm text-gray-500">years</span>
+                </div>
+              </div>
+
+              {/* Height Range */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
+                <Label className="text-sm font-normal">Height Range</Label>
+                <div className="flex gap-2 items-center">
+                  <Select name="partner_height_from" defaultValue={profile.partner_height_from?.toString() || ""}>
+                    <SelectTrigger className="w-[130px] bg-gray-50">
+                      <SelectValue placeholder="From" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HEIGHTS.map((h, i) => (
+                        <SelectItem key={i} value={(122 + i * 2.54).toString()}>
+                          {h}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <span className="text-sm text-gray-500">to</span>
+                  <Select name="partner_height_to" defaultValue={profile.partner_height_to?.toString() || ""}>
+                    <SelectTrigger className="w-[130px] bg-gray-50">
+                      <SelectValue placeholder="To" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HEIGHTS.map((h, i) => (
+                        <SelectItem key={i} value={(122 + i * 2.54).toString()}>
+                          {h}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Marital Status */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-start">
+                <Label className="text-sm font-normal pt-2">Marital Status</Label>
+                <div className="space-y-2">
+                  {["Unmarried", "Widow/Widower", "Divorced", "Separated"].map((status) => (
+                    <div key={status} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        name="partner-marital-status"
+                        id={`partner-marital-${status}`}
+                        value={status.toLowerCase().replace(/\//g, "_")}
+                        defaultChecked={profile.partner_marital_status?.includes(
+                          status.toLowerCase().replace(/\//g, "_"),
+                        )}
+                        className="rounded"
+                      />
+                      <label htmlFor={`partner-marital-${status}`} className="text-sm">
+                        {status}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Religion */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
+                <Label htmlFor="partner_religion" className="text-sm font-normal">
+                  Religion
+                </Label>
+                <Input
+                  id="partner_religion"
+                  name="partner_religion"
+                  defaultValue={profile.partner_religion?.join(", ") || ""}
+                  placeholder="e.g., Hindu, Christian"
+                  className="max-w-md bg-gray-50"
+                />
+                <p className="text-xs text-gray-500 col-start-2">Separate multiple values with commas</p>
+              </div>
+
+              {/* Mother Tongue */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-start">
+                <Label className="text-sm font-normal pt-2">Mother Tongue</Label>
+                <div className="grid grid-cols-2 gap-2 max-w-md">
+                  {LANGUAGES.map((lang) => (
+                    <div key={lang} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        name="partner-lang"
+                        id={`partner-lang-${lang}`}
+                        value={lang}
+                        defaultChecked={profile.partner_mother_tongue?.includes(lang)}
+                        className="rounded"
+                      />
+                      <label htmlFor={`partner-lang-${lang}`} className="text-sm">
+                        {lang}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Education */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-start">
+                <Label className="text-sm font-normal pt-2">Education</Label>
+                <div className="space-y-2">
+                  {[
+                    { value: "high_school", label: "High School" },
+                    { value: "diploma", label: "Diploma" },
+                    { value: "bachelors", label: "Bachelor's Degree" },
+                    { value: "masters", label: "Master's Degree" },
+                    { value: "phd", label: "PhD" },
+                  ].map((edu) => (
+                    <div key={edu.value} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        name="partner-edu"
+                        id={`partner-edu-${edu.value}`}
+                        value={edu.value}
+                        defaultChecked={profile.partner_education?.includes(edu.value)}
+                        className="rounded"
+                      />
+                      <label htmlFor={`partner-edu-${edu.value}`} className="text-sm">
+                        {edu.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Occupation */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
+                <Label htmlFor="partner_occupation" className="text-sm font-normal">
+                  Occupation
+                </Label>
+                <Input
+                  id="partner_occupation"
+                  name="partner_occupation"
+                  defaultValue={profile.partner_occupation?.join(", ") || ""}
+                  placeholder="e.g., Engineer, Doctor, Teacher"
+                  className="max-w-md bg-gray-50"
+                />
+                <p className="text-xs text-gray-500 col-start-2">Separate multiple values with commas</p>
+              </div>
+
+              {/* Country */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
+                <Label htmlFor="partner_country" className="text-sm font-normal">
+                  Country
+                </Label>
+                <Input
+                  id="partner_country"
+                  name="partner_country"
+                  defaultValue={profile.partner_country?.join(", ") || ""}
+                  placeholder="e.g., India, USA, UK"
+                  className="max-w-md bg-gray-50"
+                />
+                <p className="text-xs text-gray-500 col-start-2">Separate multiple values with commas</p>
+              </div>
+
+              {/* State */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-center">
+                <Label htmlFor="partner_state" className="text-sm font-normal">
+                  State
+                </Label>
+                <Input
+                  id="partner_state"
+                  name="partner_state"
+                  defaultValue={profile.partner_state?.join(", ") || ""}
+                  placeholder="e.g., Tamil Nadu, Karnataka"
+                  className="max-w-md bg-gray-50"
+                />
+                <p className="text-xs text-gray-500 col-start-2">Separate multiple values with commas</p>
+              </div>
+
+              {/* Eating Habits */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-start">
+                <Label className="text-sm font-normal pt-2">Eating Habits</Label>
+                <div className="space-y-2">
+                  {["Vegetarian", "Non-vegetarian", "Eggetarian", "Vegan"].map((habit) => (
+                    <div key={habit} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        name="partner-eating"
+                        id={`partner-eating-${habit}`}
+                        value={habit.toLowerCase()}
+                        defaultChecked={profile.partner_eating_habits?.includes(habit.toLowerCase())}
+                        className="rounded"
+                      />
+                      <label htmlFor={`partner-eating-${habit}`} className="text-sm">
+                        {habit}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Smoking Habits */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-start">
+                <Label className="text-sm font-normal pt-2">Smoking Habits</Label>
+                <div className="space-y-2">
+                  {["Non-smoker", "Light / Social smoker", "Regular smoker"].map((habit) => (
+                    <div key={habit} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        name="partner-smoking"
+                        id={`partner-smoking-${habit}`}
+                        value={habit.toLowerCase().replace(/ \/ /g, "_").replace(/ /g, "_")}
+                        defaultChecked={profile.partner_smoking_habits?.includes(
+                          habit.toLowerCase().replace(/ \/ /g, "_").replace(/ /g, "_"),
+                        )}
+                        className="rounded"
+                      />
+                      <label htmlFor={`partner-smoking-${habit}`} className="text-sm">
+                        {habit}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Drinking Habits */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-start">
+                <Label className="text-sm font-normal pt-2">Drinking Habits</Label>
+                <div className="space-y-2">
+                  {["Non-drinker", "Light / Social drinker", "Regular drinker"].map((habit) => (
+                    <div key={habit} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        name="partner-drinking"
+                        id={`partner-drinking-${habit}`}
+                        value={habit.toLowerCase().replace(/ \/ /g, "_").replace(/ /g, "_")}
+                        defaultChecked={profile.partner_drinking_habits?.includes(
+                          habit.toLowerCase().replace(/ \/ /g, "_").replace(/ /g, "_"),
+                        )}
+                        className="rounded"
+                      />
+                      <label htmlFor={`partner-drinking-${habit}`} className="text-sm">
+                        {habit}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* About Partner */}
+              <div className="grid grid-cols-[180px_1fr] gap-6 items-start">
+                <Label htmlFor="about_partner" className="text-sm font-normal pt-2">
+                  About Partner
+                </Label>
+                <div className="w-full">
+                  <Textarea
+                    id="about_partner"
+                    name="about_partner"
+                    defaultValue={profile.about_partner || ""}
+                    placeholder="Describe your ideal partner..."
+                    className="min-h-[120px] max-w-2xl bg-gray-50"
+                    maxLength={500}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">{profile.about_partner?.length || 0} / 500 Characters</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
       default:
         return <div>Invalid section</div>
     }

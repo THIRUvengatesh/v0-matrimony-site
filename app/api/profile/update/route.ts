@@ -14,11 +14,24 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Updating profile for user:", session.user_id)
 
-    const updateData = {
-      ...data,
-      community_id: data.community_id ? Number.parseInt(data.community_id) : null,
-      updated_at: new Date().toISOString(),
+    const updateData: Record<string, any> = {}
+
+    for (const [key, value] of Object.entries(data)) {
+      // Only include non-null values in the update
+      if (value !== null && value !== undefined) {
+        // Convert community_id to integer if present
+        if (key === "community_id") {
+          updateData[key] = Number.parseInt(value as string)
+        } else {
+          updateData[key] = value
+        }
+      }
     }
+
+    // Always update the timestamp
+    updateData.updated_at = new Date().toISOString()
+
+    console.log("[v0] Filtered update data:", Object.keys(updateData))
 
     const { error } = await supabase.from("profiles").update(updateData).eq("user_id", session.user_id)
 
